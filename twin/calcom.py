@@ -51,6 +51,23 @@ def _auth_headers(api_version: str) -> dict:
     }
 
 
+def _evenly_spaced(items: list, k: int) -> list:
+    """Return k items spread evenly across `items`, preserving order and
+    always including the first and last element.
+
+    Cal.com lists each day's slots earliest-first, so an even sample surfaces
+    a morning -> afternoon range rather than just the opening slots.
+    """
+    if k <= 0 or not items:
+        return []
+    if k >= len(items):
+        return list(items)
+    if k == 1:
+        return [items[0]]
+    step = (len(items) - 1) / (k - 1)
+    return [items[round(i * step)] for i in range(k)]
+
+
 def list_available_slots(
     days_ahead: int = DEFAULT_LOOKAHEAD_DAYS,
     timezone_name: str = "UTC",
@@ -82,12 +99,24 @@ def list_available_slots(
 
     body = resp.json()
     slots_by_day = body.get("data", {})
+
+    # Don't just take the first `max_slots` chronologically — that fills the
+    # budget with the earliest (morning) slots and hides the afternoon. Take
+    # an evenly spaced sample within each day so both halves of the day are
+    # represented, then spread the budget across the upcoming days.
+    days = [
+        (day, [e["start"] for e in entries if e.get("start")])
+        for day, entries in sorted(slots_by_day.items())
+    ]
+    days = [(day, starts) for day, starts in days if starts]
+    if not days:
+        return []
+
+    per_day = max(3, max_slots // len(days))
+
     flat = []
-    for day, entries in sorted(slots_by_day.items()):
-        for entry in entries:
-            start_time = entry.get("start")
-            if not start_time:
-                continue
+    for day, starts in days:
+        for start_time in _evenly_spaced(starts, per_day):
             flat.append({"start": start_time, "day": day})
             if len(flat) >= max_slots:
                 return flat

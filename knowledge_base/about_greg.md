@@ -2,13 +2,15 @@
 
 Greg Gibson is a behind-the-scenes individual contributor and technical analyst who discovered a passion for using AI. As an aspiring AI engineer interested in building automated applications to simplify work and make data ever more actionable, he is enjoying machine learning, conversational AI, retrieval-augmented generation, and tool-using agents — translating model capabilities into systems that solve real problems for real users.
 
-## Background
+## Work history
 
 Greg came to AI engineering after years developing automated corporate metrics to identify root cause then drive process improvements.
 
-At Staples, financial reports had a line for cargo loss with no detail.  Greg built a system to extract that trigger from Customer Service, connect replaced items to the original package and trace logged updates through warehouses and delivery operations to find points of failure.  This information led to actionable trends and the development of Standard Operating Procedures to apply and monitor cross-functionally, driving an 80% reduction in losses or avoided reshipments at a value of $190M over 10 years.
+Greg started his career at Staples, where financial reports had a line for cargo loss with no detail.  Greg built a system to extract that trigger from Customer Service, connect replaced items to the original package and trace logged updates through warehouses and delivery operations to find points of failure.  This information led to actionable trends and the development of Standard Operating Procedures to apply and monitor cross-functionally, driving an 80% reduction in losses or avoided reshipments at a value of $190M over 10 years.  Greg left Staples during a downsizing in 2016.
 
-While working remotely for Intel, Greg was surprised to find numerous reports maintained manually, repetitively and with errors.  Greg fully automated several reports or substantially reduced production time and added data quality checks.  A master consumption and cost file was updated to pull accurate data from flow meters instead of requesting calculated estimates from production engineers.
+While working remotely for Intel, Greg was surprised to find numerous reports maintained manually, repetitively and with errors.  Greg fully automated several reports or substantially reduced production time and added data quality checks.  A master consumption and cost file was updated to pull accurate data from flow meters instead of requesting calculated estimates from production engineers.  Greg left Intel during a downsizing in 2025.
+
+Between Staples and Intel, Greg was the at-home parent, extended through the COVID-19 lockdown, but learning new supply chain and technical skills.
 
 ## Education
 
@@ -18,7 +20,7 @@ Greg has completed data science and machine learning coursework from various web
 
 ## What projects he's done recently
 
-He built a digital twin: a chatbot that represents him, answers questions about his work, and books meetings with people who want to talk further. The project is a working example of the patterns he cares about — RAG over a small, curated knowledge base; tool-calling for real-world side effects (calendar booking); and a system prompt that shapes tone rather than scripts replies. It runs in Docker and deploys to Hugging Face. The stack: OpenAI for both chat and embeddings, ChromaDB for vector storage, Gradio for the UI, Pushover for notifications, Cal.com for booking.
+He built a digital twin: a chatbot that represents him, answers questions about his work, and books meetings with people who want to talk further. The project is a working example of the patterns he cares about — RAG over a small, curated knowledge base; tool-calling for real-world side effects (calendar booking); and a system prompt that shapes tone rather than scripts replies. It runs in Docker and deploys to Hugging Face. The stack: Claude for chat, OpenAI for embeddings, ChromaDB for vector storage, Gradio for the UI, Pushover for notifications, Cal.com for booking.
 
 AI Article Writer, which is a multi-agent article writing system built with the OpenAI Agents SDK and Gradio. Enter any topic and a coordinated pipeline of AI agents researches the web, generates an image, writes a polished article, and checks it through an editorial guardrail — all in one click.  Using primarily gpt-4.1-mini, the orchestrator agent calls 
 the research agent twice with slightly different queries and selects the richer brief. The image generator agent creates a relevant image. Then the orchestrator hands off to writer A (technical topics) or writer B (general-interest topics). The guardrails agent checks the article before it is returned. If it fails, the run is blocked.
@@ -44,7 +46,7 @@ Data is Greg's sword and shield, useful to poke holes and shine light into the b
 
 ## What he's interested in talking about
 
-If your business is looking to build a chatbot, task-completing agent system, machine learning prediction pipeline, or automated analytics — he's happy to chat.
+If your business is looking to build a chatbot, task-completing agent system, machine learning prediction pipeline, or automated analytics — he's happy to chat. If you feel over-burdened, AI can automate a significant portion of your day to day computer work, ask me how! 
 
 ## Conversational or fun personal topics
 

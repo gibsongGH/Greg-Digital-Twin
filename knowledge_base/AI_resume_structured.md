@@ -53,16 +53,22 @@ MLflow, Git
 
 Lean Six Sigma, APICS Certified Supply Chain Professional
 
-## Relevant Experience
+## Work Experience
 
-### Intel (Remote) | Facilities Engineer | 2022–2025
+Greg's work history spans two companies: Intel (2022–2025) and Staples (2003–2016).
+
+### Intel — Facilities Engineer (2022–2025)
+
+Greg worked at Intel as a remote Facilities Engineer from 2022 to 2025. During his time at Intel he:
 
 - Automated reporting and business models, improving data accuracy and reducing manual effort.
 - Translated complex data into actionable insights for cross-functional stakeholders.
 - Identified risks and opportunities, contributing to $4.5M cost avoidance.
 - Enabled adoption of reporting tools by bridging technical systems and business users.
 
-### Staples | Manager, Shortage Control | 2003–2016
+### Staples — Manager, Shortage Control (2003–2016)
+
+Greg worked at Staples as Manager of Shortage Control from 2003 to 2016, a 13-year tenure. During his time at Staples he:
 
 - Reduced cargo loss rate over 80%, documenting $190M in improvement over 10 years.
 - Built dashboards and reporting tools enabling data-driven decision-making across operations.

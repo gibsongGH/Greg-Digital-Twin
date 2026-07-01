@@ -87,3 +87,6 @@ requirements.txt
 ## Links
 - Hugging Face Space: [Live demo](https://huggingface.co/spaces/gibsongHF/Greg_Digital_Twin)
 - Portfolio: [Website](https://gibson-ai.com)
+
+
+Original project via SuperDataScience, expansions including calendar booking credit JeanWeng01

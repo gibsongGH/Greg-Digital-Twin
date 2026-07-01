@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+from huggingface_hub import snapshot_download
 
 import gradio as gr
 from dotenv import load_dotenv
@@ -17,9 +19,29 @@ def _check_env() -> None:
     if missing:
         raise RuntimeError(
             f"Missing required env vars: {', '.join(missing)}. "
-            "Copy .env.example to .env and fill in the values."
+            "Fill in required variable values into file .env."
         )
 
+def get_knowledge_base_path() -> Path:
+    local_path = Path("knowledge_base")
+
+    # Use local folder during development if present
+    if local_path.exists():
+        return local_path
+
+    # Otherwise pull private dataset in production
+    hf_token = os.getenv("HF_TOKEN")
+    if not hf_token:
+        raise RuntimeError("Missing HF_TOKEN secret for private dataset access.")
+
+    dataset_path = snapshot_download(
+        repo_id="gibsongHF/digital_twin_docs",
+        repo_type="dataset",
+        token=hf_token,
+        allow_patterns=["knowledge_base/*.md"],
+    )
+
+    return Path(dataset_path) / "knowledge_base"
 
 def chat_fn(message: str, history: list[dict], request: gr.Request):
     session_id = getattr(request, "session_hash", None) or "unknown"

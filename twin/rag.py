@@ -11,6 +11,13 @@ CHROMA_PATH = "./chroma_db"
 COLLECTION_NAME = "greg_kb"
 KB_DIR = Path("./knowledge_base")
 
+# In production (e.g. the Hugging Face Space) set KB_DATASET_REPO to a private
+# HF dataset repo id like "gibsongHF/digital_twin_docs" so the knowledge base
+# is pulled from there instead of the local folder. Leave it unset for local
+# testing to read from ./knowledge_base. HF_TOKEN must grant read access to the
+# dataset when it is private.
+KB_DATASET_REPO = os.getenv("KB_DATASET_REPO", "").strip()
+
 # If any single paragraph is longer than this, split it on sentence boundaries.
 MAX_PARAGRAPH_CHARS = 1500
 
@@ -101,6 +108,27 @@ def get_collection():
     return _collection
 
 
+def _resolve_kb_dir() -> Path:
+    """Return the directory to read knowledge-base markdown from.
+
+    If KB_DATASET_REPO is set, download that (private) Hugging Face dataset and
+    read from the local snapshot. Otherwise fall back to the local ./knowledge_base
+    folder used during development.
+    """
+    if not KB_DATASET_REPO:
+        return KB_DIR
+
+    from huggingface_hub import snapshot_download
+
+    snapshot_path = snapshot_download(
+        repo_id=KB_DATASET_REPO,
+        repo_type="dataset",
+        token=os.getenv("HF_TOKEN") or None,
+        allow_patterns=["*.md"],
+    )
+    return Path(snapshot_path)
+
+
 def build_index(force_rebuild: bool = False) -> int:
     """Read all .md files in knowledge_base/, chunk them by paragraph, embed, store in Chroma.
     Returns number of chunks indexed. Skips rebuild if collection already populated
@@ -120,11 +148,12 @@ def build_index(force_rebuild: bool = False) -> int:
         )
         collection = _collection
 
-    if not KB_DIR.exists():
+    kb_dir = _resolve_kb_dir()
+    if not kb_dir.exists():
         return 0
 
     all_chunks, all_ids, all_metadatas = [], [], []
-    for md_path in sorted(KB_DIR.glob("*.md")):
+    for md_path in sorted(kb_dir.glob("*.md")):
         text = md_path.read_text(encoding="utf-8")
         source = md_path.stem
         for i, chunk in enumerate(chunk_markdown_by_paragraph(text)):
