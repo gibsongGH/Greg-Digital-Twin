@@ -14,12 +14,13 @@ pinned: false
 
 > Live demo available on Hugging Face Spaces:  [Digital Twin](https://huggingface.co/spaces/gibsongHF/Greg_Digital_Twin)
 
-An AI-powered chatbot that answers questions about my professional background using my own documents and project history
-and books 15-minute intro calls onto my Cal.com calendar via Claude tool 
+An AI-powered chatbot that answers questions about my professional background using my own documents and project history,
+schedules 15-minute intro calls onto my Cal.com calendar via Claude tool use, and holds spoken conversations —
+talk to it with your microphone and it answers back in a natural voice.
 
 Built as a practical application of Retrieval-Augmented Generation (RAG), this project turns static career materials into a searchable, conversational system.
 
-It’s essentially a structured, queryable version of a resume — with context.
+It’s essentially a structured, queryable version of a resume — with context, a calendar, and a voice.
 
 ## What it can do
 
@@ -28,6 +29,8 @@ It’s essentially a structured, queryable version of a resume — with context.
 - Summarize skills and tools across different domains
 - Retrieve relevant context from source documents
 - Generate clear, conversational responses based on that context
+- Schedule a 15-minute intro call — the bot checks my real Cal.com availability, offers open slots, and books the meeting for you
+- Respond to voice: record a question with the mic and hear the reply read aloud (speech-to-text and text-to-speech via Deepgram)
 
 ## Why I built it
 
@@ -55,24 +58,33 @@ This project reflects how I think about AI engineering:
 4. Bot calls `create_booking(start_iso, name, email, timezone, topic)`.
 5. Cal.com sends the visitor a calendar invite + the meeting link, and emails Greg.
 
+## How the voice flow works
+
+1. Visitor records a message with the microphone → Deepgram Nova transcribes it and it appears in the chat as their message.
+2. The transcript goes through the same RAG + Claude pipeline as typed messages (including booking tools), streaming the reply into the chat.
+3. While the reply is still streaming, completed sentences are already being synthesized in parallel with Deepgram Aura (Orpheus voice) — markdown formatting is stripped so it isn't read aloud.
+4. The stitched reply audio autoplays as soon as the text finishes. Typed messages get a text-only reply; voice in, voice out.
+
 ## Stack
 - **Chat:** Anthropic Claude Sonnet 4.6 (`claude-sonnet-4-6`) with tool use
+- **Voice:** Deepgram Nova-3 (speech-to-text) + Aura-2 Orpheus (text-to-speech)
 - **Embeddings:** OpenAI `text-embedding-3-small`
 - **Vector store:** ChromaDB (local, persisted to `chroma_db/`)
-- **UI:** Gradio `ChatInterface` (Gradio 6.x — messages format)
+- **UI:** Gradio Blocks (Gradio 6.x — messages format) with mic input and autoplayed reply audio
 - **Booking:** Cal.com v2 API
 - **Notifications:** Pushover
 - **Deploy:** Docker → Hugging Face Spaces
 
 ## Project layout
 ```
-app.py                  # Gradio entrypoint
+app.py                  # Gradio entrypoint (chat UI + mic input + reply audio)
 twin/
   prompts.py            # System prompt
   rag.py                # Paragraph chunking + Chroma + embeddings
-  tools.py              # OpenAI tool schemas + dispatch
+  tools.py              # Claude tool schemas + dispatch
   calcom.py             # Cal.com API client (v2)
-  llm.py                # OpenAI client + tool-call loop
+  llm.py                # Claude client + tool-call loop
+  voice.py              # Deepgram STT + streaming parallel TTS
   convolog.py           # Conversation logger (JSONL)
 knowledge_base/
   about_greg.md         # Knowledge base — drop more .md files here
