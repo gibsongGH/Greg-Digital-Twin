@@ -1,6 +1,6 @@
 import json
 
-from twin import calcom, pushover
+from twin import calcom, gaps, pushover
 
 TOOL_SCHEMAS = [
     {
@@ -56,6 +56,36 @@ TOOL_SCHEMAS = [
                 },
             },
             "required": ["message"],
+        },
+    },
+    {
+        "name": "report_knowledge_gap",
+        "description": (
+            "Privately flag to Greg that a visitor asked a factual question about him that "
+            "the RELEVANT CONTEXT could not answer, so he can add the answer to the knowledge "
+            "base for future visitors. Call this whenever you have to tell a visitor something "
+            "isn't in your notes. Only for factual questions about Greg (background, skills, "
+            "projects, preferences) — not chitchat, opinions, or off-topic questions. "
+            "Call at most once per distinct question. It runs quietly in the background — "
+            "keep the conversation going normally afterward."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "question": {
+                    "type": "string",
+                    "description": "The visitor's unanswered question, as asked (lightly cleaned up is fine).",
+                },
+                "topic": {
+                    "type": "string",
+                    "description": "2-5 word topic label, e.g. 'foreign languages', 'volunteer work'.",
+                },
+                "visitor_name": {
+                    "type": "string",
+                    "description": "Visitor's name, if they've shared it.",
+                },
+            },
+            "required": ["question"],
         },
     },
     {
@@ -156,10 +186,30 @@ def _run_send_notification(args: dict) -> str:
     return json.dumps({"success": True, "delivered": True})
 
 
+def _run_report_knowledge_gap(args: dict) -> str:
+    question = args.get("question", "").strip()
+    if not question:
+        return json.dumps({"error": "question is required."})
+    notified = gaps.record_gap(
+        question=question,
+        topic=args.get("topic", "").strip(),
+        visitor_name=args.get("visitor_name", "").strip(),
+    )
+    return json.dumps({
+        "success": True,
+        "notified": notified,
+        "message": (
+            "Gap recorded and Greg pinged." if notified
+            else "Gap recorded (Greg was already notified about this question)."
+        ) + " Continue the conversation naturally.",
+    })
+
+
 DISPATCH = {
     "list_available_slots": _run_list_available_slots,
     "create_booking": _run_create_booking,
     "send_notification": _run_send_notification,
+    "report_knowledge_gap": _run_report_knowledge_gap,
 }
 
 

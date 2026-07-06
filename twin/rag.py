@@ -129,16 +129,30 @@ def _resolve_kb_dir() -> Path:
     return Path(snapshot_path)
 
 
+def _kb_fingerprint(kb_dir: Path) -> str:
+    """Hash of all KB markdown, so index rebuilds happen exactly when content changes."""
+    h = hashlib.sha1()
+    for md_path in sorted(kb_dir.glob("*.md")):
+        h.update(md_path.name.encode("utf-8"))
+        h.update(md_path.read_bytes())
+    return h.hexdigest()
+
+
 def build_index(force_rebuild: bool = False) -> int:
     """Read all .md files in knowledge_base/, chunk them by paragraph, embed, store in Chroma.
-    Returns number of chunks indexed. Skips rebuild if collection already populated
-    and force_rebuild is False."""
+    Returns number of chunks indexed. Skips rebuild if the collection is already populated
+    from identical KB content and force_rebuild is False."""
     collection = get_collection()
 
-    if not force_rebuild and collection.count() > 0:
-        return collection.count()
+    kb_dir_early = _resolve_kb_dir()
+    fingerprint = _kb_fingerprint(kb_dir_early) if kb_dir_early.exists() else ""
 
-    if force_rebuild and collection.count() > 0:
+    if not force_rebuild and collection.count() > 0:
+        indexed_fp = (collection.metadata or {}).get("kb_fingerprint")
+        if indexed_fp == fingerprint:
+            return collection.count()
+
+    if collection.count() > 0:
         # Easiest reliable reset: drop the collection and recreate.
         global _collection
         _chroma_client.delete_collection(COLLECTION_NAME)
@@ -148,7 +162,7 @@ def build_index(force_rebuild: bool = False) -> int:
         )
         collection = _collection
 
-    kb_dir = _resolve_kb_dir()
+    kb_dir = kb_dir_early
     if not kb_dir.exists():
         return 0
 
@@ -175,6 +189,10 @@ def build_index(force_rebuild: bool = False) -> int:
         documents=all_chunks,
         metadatas=all_metadatas,
     )
+    collection.modify(metadata={
+        "description": "Greg's digital twin knowledge base",
+        "kb_fingerprint": fingerprint,
+    })
     return len(all_chunks)
 
 

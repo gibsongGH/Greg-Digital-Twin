@@ -31,6 +31,7 @@ It’s essentially a structured, queryable version of a resume — with context,
 - Generate clear, conversational responses based on that context
 - Schedule a 15-minute intro call — the bot checks my real Cal.com availability, offers open slots, and books the meeting for you
 - Respond to voice: record a question with the mic and hear the reply read aloud (speech-to-text and text-to-speech via Deepgram)
+- Learn from what it can't answer — unanswered questions are captured and sent to me, and my answer joins the knowledge base for the next visitor
 
 ## Why I built it
 
@@ -65,6 +66,14 @@ This project reflects how I think about AI engineering:
 3. While the reply is still streaming, completed sentences are already being synthesized in parallel with Deepgram Aura (Orpheus voice) — markdown formatting is stripped so it isn't read aloud.
 4. The stitched reply audio autoplays as soon as the text finishes. Typed messages get a text-only reply; voice in, voice out.
 
+## How the knowledge-gap loop works
+
+1. A visitor asks a factual question about Greg that the retrieved context can't answer.
+2. The bot admits it honestly (no made-up answers), calls `report_knowledge_gap`, and keeps the conversation going — the visitor is never blocked.
+3. The gap is appended to `logs/knowledge_gaps.jsonl` and Greg gets a Pushover notification with the question.
+4. Greg adds the answer to the knowledge base (`knowledge_base/answers_from_greg.md` locally, or the private HF dataset in production).
+5. On the next container/Space start, the index detects the content change (fingerprint check) and re-embeds automatically — the answer is now available to every future visitor.
+
 ## Stack
 - **Chat:** Anthropic Claude Sonnet 4.6 (`claude-sonnet-4-6`) with tool use
 - **Voice:** Deepgram Nova-3 (speech-to-text) + Aura-2 Orpheus (text-to-speech)
@@ -85,12 +94,14 @@ twin/
   calcom.py             # Cal.com API client (v2)
   llm.py                # Claude client + tool-call loop
   voice.py              # Deepgram STT + streaming parallel TTS
+  gaps.py               # Knowledge-gap capture + Pushover ping
   convolog.py           # Conversation logger (JSONL)
 knowledge_base/
   about_greg.md         # Knowledge base — drop more .md files here
   resume.md
 logs/
   conversations.jsonl   # One JSON object per turn (gitignored)
+  knowledge_gaps.jsonl  # Questions the KB couldn't answer (gitignored)
 Dockerfile
 requirements.txt
 .env
@@ -102,3 +113,4 @@ requirements.txt
 
 
 Original project via SuperDataScience, expansions including calendar booking credit JeanWeng01
+voice credit kusht07
