@@ -44,6 +44,23 @@ def transcribe_audio(audio_path: str) -> str:
     return response.results.channels[0].alternatives[0].transcript.strip()
 
 
+# Emoji and related invisibles (ZWJ, variation selectors, keycaps) — Deepgram
+# reads them aloud by name ("waving hand", "rocket"), so drop them from speech.
+_EMOJI = re.compile(
+    "["
+    "\U0001F000-\U0001FAFF"  # emoticons, symbols, transport, supplemental, extended-A
+    "☀-➿"          # misc symbols + dingbats (sun, scissors, check, heart)
+    "⬀-⯿"          # symbols and arrows (star, up arrow)
+    "⌀-⏿"          # misc technical (watch, alarm clock, hourglass)
+    "←-⇿"          # arrows
+    "‼⁉"           # double bang, interrobang
+    "〰〽"           # wavy dash, part-alternation mark
+    "︀-️"          # variation selectors
+    "‍"                 # zero-width joiner
+    "⃣"                 # combining keycap
+    "]+"
+)
+
 # Markdown syntax the TTS would otherwise read aloud ("star", "backtick", ...).
 _MD_PATTERNS = [
     (re.compile(r"```.*?```", re.DOTALL), " "),               # fenced code blocks
@@ -55,6 +72,7 @@ _MD_PATTERNS = [
     (re.compile(r"^#{1,6}\s+", re.MULTILINE), ""),            # headers
     (re.compile(r"^\s*[-*+]\s+", re.MULTILINE), ""),          # list bullets
     (re.compile(r"^\s*>\s?", re.MULTILINE), ""),              # blockquotes
+    (_EMOJI, " "),                                            # emoji -> silence
 ]
 
 # A pending markdown span (e.g. an unclosed "**") — don't cut a chunk through it.
