@@ -11,10 +11,23 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping the Space
+      - name: Ping all Spaces
         run: |
-          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 120 \
-            https://gibsonghf-greg-digital-twin.hf.space/)
-          echo "Space responded with HTTP $code"
-          # 200 = awake; anything else fails the job so GitHub emails Greg.
-          [ "$code" = "200" ]
+          spaces=(
+            "https://gibsonghf-greg-digital-twin.hf.space/"
+            "https://gibsonghf-ai-article-writer.hf.space/"
+            "https://gibsonghf-netflix-rag.hf.space/"
+          )
+
+          failed=0
+
+          for space in "${spaces[@]}"; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 120 "$space")
+            echo "$space responded with HTTP $code"
+
+            if [ "$code" != "200" ]; then
+              failed=1
+            fi
+          done
+
+          exit $failed
